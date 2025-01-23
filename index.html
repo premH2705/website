@@ -30,7 +30,6 @@
             text-align: center;
         }
 
-        /* Responsive video container */
         .video-container {
             width: 90%;
             max-width: 450px;
@@ -53,7 +52,6 @@
             border-radius: 15px;
         }
 
-        /* Result Box Style */
         .result {
             font-size: 1.5em;
             font-weight: bold;
@@ -65,7 +63,6 @@
             text-align: center;
         }
 
-        /* No human detected message */
         .no-human {
             font-size: 3em;
             color: red;
@@ -74,13 +71,12 @@
             display: inline-block;
             border-radius: 10px;
             background-color: rgba(255, 0, 0, 0.5);
-            margin-top: 50px;
-            width: 100%;
+            margin-top: 45px;
+            width: 80%;
             text-align: center;
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
         }
 
-        /* Footer styling */
         .footer {
             position: fixed;
             bottom: 10px;
@@ -89,7 +85,6 @@
             color: cyan;
         }
 
-        /* Info section styling */
         .intro {
             padding: 20px;
             margin: 20px auto;
@@ -136,7 +131,6 @@
             100% { opacity: 1; }
         }
 
-        /* Responsiveness for small screens */
         @media (max-width: 768px) {
             h1 {
                 font-size: 2em;
@@ -163,7 +157,6 @@
             }
         }
 
-        /* Handling touch devices better */
         .video-container {
             touch-action: none;
         }
@@ -175,6 +168,7 @@
 
     <div class="intro">
         <div class="section-title">Welcome to Face Shape Recognition</div>
+        <p>this is a beta website so it make such a mistake </p>
         <p>This website uses AI-powered face mesh technology to analyze the shape of your face in real-time using your webcam. The tool detects landmarks on your face and classifies your face shape based on several key parameters.</p>
         <button onclick="toggleInfo()">Learn More</button>
     </div>
@@ -201,6 +195,8 @@
             <li><strong>Heart:</strong> A face with a wide forehead and narrow chin.</li>
             <li><strong>Pear:</strong> A face with a narrow forehead and wider jawline.</li>
             <li><strong>Oblong:</strong> A longer face shape with a narrow width.</li>
+            <li><strong>Inverted Triangle:</strong> A face shape with a narrow chin and wider forehead, similar to the heart shape but more pointed.</li>
+            <li><strong>Triangle:</strong> A face with a wide jawline and narrow forehead.</li>
         </ul>
     </div>
 
@@ -276,6 +272,8 @@
             if (faceHeight > foreheadWidth * 1.5) return "Oblong";
             if (jawWidth > cheekboneWidth && cheekboneWidth > foreheadWidth) return "Diamond";
             if (jawWidth > foreheadWidth * 1.2) return "Pear";
+            if (cheekboneWidth > foreheadWidth * 1.2 && jawWidth > foreheadWidth * 1.2) return "Inverted Triangle";
+            if (jawWidth > cheekboneWidth * 1.2) return "Triangle";
             return "Unknown";
         }
 
@@ -288,6 +286,8 @@
                 "Heart": "red",
                 "Pear": "brown",
                 "Oblong": "yellow",
+                "Inverted Triangle": "lightgreen",
+                "Triangle": "lightcoral",
                 "Unknown": "gray"
             };
             resultText.style.backgroundColor = colors[shape] || "gray";
