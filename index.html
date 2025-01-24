@@ -13,68 +13,73 @@
             margin: 0;
             padding: 0;
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a, #333);
-            color: white;
+            background: linear-gradient(135deg, #2a2e45, #4e5571);
+            color: #eaeaea;
             overflow-x: hidden;
-            animation: backgroundShift 5s infinite alternate;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
+            animation: backgroundShift 5s infinite alternate;
         }
 
         h1 {
-            margin-top: 30px;
-            color: cyan;
-            text-shadow: 2px 2px 10px black;
-            font-size: 2.5em;
-            text-align: center;
+            color: #61dafb;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+            font-size: 2.8em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: opacity 1s ease-in-out;
         }
 
         .video-container {
             width: 90%;
-            max-width: 450px;
+            max-width: 500px;
             aspect-ratio: 4 / 3;
-            border: 3px solid cyan;
-            border-radius: 15px;
-            margin-top: 20px;
+            border: 4px solid #61dafb;
+            border-radius: 12px;
+            margin-top: 30px;
             position: relative;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
-            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 30px rgba(97, 175, 251, 0.6);
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
+            transition: all 0.3s ease;
         }
 
         video, canvas {
             position: absolute;
             width: 100%;
             height: 100%;
-            border-radius: 15px;
+            border-radius: 12px;
         }
 
         .result {
-            font-size: 1.5em;
+            font-size: 1.6em;
             font-weight: bold;
-            padding: 10px;
+            padding: 15px 25px;
             display: inline-block;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-top: 20px;
-            transition: background-color 0.5s ease;
             text-align: center;
+            max-width: 300px;
+            transition: all 0.5s ease-in-out;
         }
 
         .no-human {
             font-size: 3em;
-            color: red;
+            color: #ff5252;
             font-weight: bold;
-            padding: 50px;
+            padding: 60px;
             display: inline-block;
-            border-radius: 10px;
-            background-color: rgba(255, 0, 0, 0.5);
-            margin-top: 45px;
-            width: 80%;
+            border-radius: 15px;
+            background-color: rgba(255, 82, 82, 0.6);
+            margin-top: 50px;
+            width: 100%;
             text-align: center;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+            box-shadow: 0 0 15px rgba(255, 82, 82, 0.8);
         }
 
         .footer {
@@ -82,48 +87,50 @@
             bottom: 10px;
             right: 10px;
             font-size: 14px;
-            color: cyan;
+            color: #61dafb;
+            transition: opacity 1s ease-in-out;
         }
 
         .intro {
-            padding: 20px;
+            padding: 30px;
             margin: 20px auto;
-            width: 80%;
-            max-width: 600px;
+            width: 85%;
+            max-width: 650px;
             background-color: rgba(0, 0, 0, 0.6);
             border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(97, 175, 251, 0.8);
             animation: fadeIn 2s ease-out;
         }
 
         .section-title {
-            font-size: 1.8em;
-            color: cyan;
-            text-shadow: 1px 1px 5px black;
+            font-size: 1.9em;
+            color: #61dafb;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
             margin-bottom: 15px;
         }
 
         button {
-            padding: 12px 25px;
-            font-size: 1.2em;
-            background-color: cyan;
-            color: black;
+            padding: 14px 30px;
+            font-size: 1.3em;
+            background-color: #61dafb;
+            color: #2c3e50;
             border: none;
-            border-radius: 10px;
+            border-radius: 15px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease;
             width: 100%;
-            max-width: 200px;
-            margin-top: 15px;
+            max-width: 220px;
+            margin-top: 20px;
         }
 
         button:hover {
-            background-color: #00b7b7;
+            background-color: #4a90e2;
+            transform: translateY(-3px);
         }
 
         @keyframes backgroundShift {
-            0% { background: linear-gradient(135deg, #1a1a1a, #222); }
-            100% { background: linear-gradient(135deg, #333, #444); }
+            0% { background: linear-gradient(135deg, #2a2e45, #39475c); }
+            100% { background: linear-gradient(135deg, #4e5571, #2a2e45); }
         }
 
         @keyframes fadeIn {
@@ -133,19 +140,20 @@
 
         @media (max-width: 768px) {
             h1 {
-                font-size: 2em;
+                font-size: 2.4em;
             }
 
             .video-container {
                 max-width: 100%;
+                box-shadow: 0 0 25px rgba(97, 175, 251, 0.6);
             }
 
             .result {
-                font-size: 1.2em;
+                font-size: 1.4em;
             }
 
             .no-human {
-                font-size: 2.5em;
+                font-size: 2.8em;
             }
 
             .intro, .info {
@@ -168,8 +176,7 @@
 
     <div class="intro">
         <div class="section-title">Welcome to Face Shape Recognition</div>
-        <p>This is a beta version of the website, so it may make some mistakes or not be 100% accurate.</p>
-        <p>The AI-powered system uses face mesh technology to analyze key facial landmarks, such as the width of your forehead, cheekbones, and jaw, to estimate your face shape. However, results may vary depending on factors such as lighting, angle, or the accuracy of the system's facial landmark detection.</p>
+        <p>This website uses AI-powered face mesh technology to analyze the shape of your face in real-time using your webcam. The tool detects landmarks on your face and classifies your face shape based on several key parameters.</p>
         <button onclick="toggleInfo()">Learn More</button>
     </div>
 
@@ -195,8 +202,6 @@
             <li><strong>Heart:</strong> A face with a wide forehead and narrow chin.</li>
             <li><strong>Pear:</strong> A face with a narrow forehead and wider jawline.</li>
             <li><strong>Oblong:</strong> A longer face shape with a narrow width.</li>
-            <li><strong>Inverted Triangle:</strong> A face shape with a narrow chin and wider forehead, similar to the heart shape but more pointed.</li>
-            <li><strong>Triangle:</strong> A face with a wide jawline and narrow forehead.</li>
         </ul>
     </div>
 
@@ -272,36 +277,32 @@
             if (faceHeight > foreheadWidth * 1.5) return "Oblong";
             if (jawWidth > cheekboneWidth && cheekboneWidth > foreheadWidth) return "Diamond";
             if (jawWidth > foreheadWidth * 1.2) return "Pear";
-            if (cheekboneWidth > foreheadWidth * 1.2 && jawWidth > foreheadWidth * 1.2) return "Inverted Triangle";
-            if (jawWidth > cheekboneWidth * 1.2) return "Triangle";
             return "Unknown";
         }
 
         function applyColor(shape) {
             const colors = {
-                "Oval": "lightblue",
-                "Round": "pink",
-                "Square": "orange",
-                "Diamond": "purple",
-                "Heart": "red",
-                "Pear": "brown",
-                "Oblong": "yellow",
-                "Inverted Triangle": "lightgreen",
-                "Triangle": "lightcoral",
-                "Unknown": "gray"
+                "Oval": "#b3e0ff",
+                "Round": "#ffb3d9",
+                "Square": "#ffcc80",
+                "Diamond": "#b399ff",
+                "Heart": "#ff6666",
+                "Pear": "#b59c6f",
+                "Oblong": "#ffec80",
+                "Unknown": "#ccc"
             };
-            resultText.style.backgroundColor = colors[shape] || "gray";
+            resultText.style.backgroundColor = colors[shape] || "#ccc";
         }
 
         function drawLandmarks(landmarks) {
-            ctx.strokeStyle = "cyan";
+            ctx.strokeStyle = "#5ae3ff";
             ctx.lineWidth = 2;
             for (let i = 0; i < landmarks.length; i++) {
                 let x = landmarks[i].x * canvas.width;
                 let y = landmarks[i].y * canvas.height;
                 ctx.beginPath();
                 ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                ctx.fillStyle = "red";
+                ctx.fillStyle = "#ff3333";
                 ctx.fill();
             }
         }
