@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Face Shape Recognition</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
@@ -72,28 +72,20 @@
         let canvas = document.getElementById('canvas');
         let ctx = canvas.getContext('2d');
         let resultText = document.getElementById('faceShapeResult');
-        let faceMesh;
+        let faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.95, minTrackingConfidence: 0.95 });
+        faceMesh.onResults(processResults);
 
         async function startWebcam() {
             let stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
-            return new Promise(resolve => {
-                video.onloadedmetadata = () => {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    resolve();
-                };
-            });
-        }
-
-        async function loadFaceMesh() {
-            faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
-            faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.9, minTrackingConfidence: 0.9 });
-            faceMesh.onResults(processResults);
+            await new Promise(resolve => video.onloadedmetadata = resolve);
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            detectFace();
         }
 
         async function detectFace() {
-            if (!faceMesh) return;
             await faceMesh.send({ image: video });
             requestAnimationFrame(detectFace);
         }
@@ -101,57 +93,44 @@
         function processResults(results) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
             if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
                 resultText.innerText = "No Face Detected";
                 document.body.style.background = "black";
                 return;
             }
-            
             let landmarks = results.multiFaceLandmarks[0];
-            let faceShape = classifyFaceShape(landmarks);
+            let faceShape = determineFaceShape(landmarks);
             resultText.innerText = `Face Shape: ${faceShape}`;
             changeBackgroundColor(faceShape);
         }
 
-        function classifyFaceShape(landmarks) {
-            let foreheadWidth = Math.abs(landmarks[10].x - landmarks[338].x);
+        function determineFaceShape(landmarks) {
+            let foreheadWidth = Math.abs(landmarks[71].x - landmarks[301].x);
             let cheekboneWidth = Math.abs(landmarks[234].x - landmarks[454].x);
-            let jawWidth = Math.abs(landmarks[152].x - landmarks[175].x);
+            let jawWidth = Math.abs(landmarks[172].x - landmarks[397].x);
             let faceHeight = Math.abs(landmarks[10].y - landmarks[152].y);
-            
-            let aspectRatio = cheekboneWidth / faceHeight;
-            
-            if (aspectRatio > 1.3) return "Oval";
-            if (jawWidth > cheekboneWidth * 1.1) return "Square";
-            if (cheekboneWidth > foreheadWidth * 1.2) return "Heart";
-            if (aspectRatio < 0.9) return "Round";
-            if (faceHeight > foreheadWidth * 1.6) return "Oblong";
-            if (jawWidth > cheekboneWidth && cheekboneWidth > foreheadWidth) return "Diamond";
-            if (jawWidth > foreheadWidth * 1.15) return "Pear";
+
+            // Normalize the values
+            let normCheekboneWidth = cheekboneWidth / faceHeight;
+            let normForeheadWidth = foreheadWidth / faceHeight;
+            let normJawWidth = jawWidth / faceHeight;
+
+            if (normCheekboneWidth > normForeheadWidth * 1.15 && normCheekboneWidth > normJawWidth * 1.15) return "Diamond";
+            if (normForeheadWidth > normCheekboneWidth * 1.1 && normJawWidth < normForeheadWidth * 0.85) return "Heart";
+            if (faceHeight > normCheekboneWidth * 1.5) return "Oval";
+            if (normJawWidth > normForeheadWidth * 1.1 && normJawWidth > normCheekboneWidth * 1.1) return "Square";
+            if (normCheekboneWidth > normForeheadWidth * 1.05 && faceHeight < normCheekboneWidth * 1.3) return "Round";
+            if (faceHeight > normForeheadWidth * 1.7) return "Oblong";
+            if (normJawWidth > normCheekboneWidth * 1.1 && faceHeight > normCheekboneWidth * 1.3) return "Pear";
             return "Unknown";
         }
 
         function changeBackgroundColor(faceShape) {
-            const colors = {
-                "Diamond": "blue",
-                "Heart": "red",
-                "Oval": "green",
-                "Square": "yellow",
-                "Round": "purple",
-                "Oblong": "orange",
-                "Pear": "pink"
-            };
+            const colors = { "Diamond": "blue", "Heart": "red", "Oval": "green", "Square": "yellow", "Round": "purple", "Oblong": "orange", "Pear": "pink" };
             document.body.style.background = colors[faceShape] || "black";
         }
 
-        async function run() {
-            await startWebcam();
-            await loadFaceMesh();
-            detectFace();
-        }
-
-        run();
+        startWebcam();
     </script>
 </body>
 </html>
