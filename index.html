@@ -56,6 +56,14 @@
             font-weight: bold;
             color: #eaeaea;
         }
+        .beta-disclaimer {
+            position: absolute;
+            bottom: 10px;
+            left: 20px;
+            font-size: 0.8em;
+            color: #eaeaea;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -66,6 +74,7 @@
     </div>
     <div class="result" id="faceShapeResult">Detecting...</div>
     <div class="subheading">Website by Prem Patel</div>
+    <div class="beta-disclaimer">This is a beta version, so it may detect the wrong face shape type. Thank you for your understanding.</div>
 
     <script>
         let video = document.getElementById('webcam');
@@ -75,6 +84,10 @@
         let faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
         faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.95, minTrackingConfidence: 0.95 });
         faceMesh.onResults(processResults);
+
+        // Smoothing logic
+        let faceShapeHistory = [];
+        const historyLength = 5;
 
         async function startWebcam() {
             let stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -99,30 +112,56 @@
                 return;
             }
             let landmarks = results.multiFaceLandmarks[0];
-            let faceShape = determineFaceShape(landmarks);
+            let faceShape = determineFaceShapeWithSmoothing(landmarks); // Use smoothed face shape
             resultText.innerText = `Face Shape: ${faceShape}`;
             changeBackgroundColor(faceShape);
         }
 
         function determineFaceShape(landmarks) {
-            let foreheadWidth = Math.abs(landmarks[71].x - landmarks[301].x);
-            let cheekboneWidth = Math.abs(landmarks[234].x - landmarks[454].x);
-            let jawWidth = Math.abs(landmarks[172].x - landmarks[397].x);
-            let faceHeight = Math.abs(landmarks[10].y - landmarks[152].y);
+            // Key landmarks for face shape determination
+            let foreheadWidth = Math.abs(landmarks[71].x - landmarks[301].x); // Forehead width
+            let cheekboneWidth = Math.abs(landmarks[234].x - landmarks[454].x); // Cheekbone width
+            let jawWidth = Math.abs(landmarks[172].x - landmarks[397].x); // Jaw width
+            let faceHeight = Math.abs(landmarks[10].y - landmarks[152].y); // Face height
 
             // Normalize the values
             let normCheekboneWidth = cheekboneWidth / faceHeight;
             let normForeheadWidth = foreheadWidth / faceHeight;
             let normJawWidth = jawWidth / faceHeight;
 
-            if (normCheekboneWidth > normForeheadWidth * 1.15 && normCheekboneWidth > normJawWidth * 1.15) return "Diamond";
-            if (normForeheadWidth > normCheekboneWidth * 1.1 && normJawWidth < normForeheadWidth * 0.85) return "Heart";
-            if (faceHeight > normCheekboneWidth * 1.5) return "Oval";
-            if (normJawWidth > normForeheadWidth * 1.1 && normJawWidth > normCheekboneWidth * 1.1) return "Square";
-            if (normCheekboneWidth > normForeheadWidth * 1.05 && faceHeight < normCheekboneWidth * 1.3) return "Round";
-            if (faceHeight > normForeheadWidth * 1.7) return "Oblong";
-            if (normJawWidth > normCheekboneWidth * 1.1 && faceHeight > normCheekboneWidth * 1.3) return "Pear";
-            return "Unknown";
+            // Determine face shape based on normalized ratios
+            if (normCheekboneWidth > normForeheadWidth * 1.15 && normCheekboneWidth > normJawWidth * 1.15) {
+                return "Diamond";
+            } else if (normForeheadWidth > normCheekboneWidth * 1.1 && normJawWidth < normForeheadWidth * 0.85) {
+                return "Heart";
+            } else if (faceHeight > normCheekboneWidth * 1.5) {
+                return "Oval";
+            } else if (normJawWidth > normForeheadWidth * 1.1 && normJawWidth > normCheekboneWidth * 1.1) {
+                return "Square";
+            } else if (normCheekboneWidth > normForeheadWidth * 1.05 && faceHeight < normCheekboneWidth * 1.3) {
+                return "Round";
+            } else if (faceHeight > normForeheadWidth * 1.7) {
+                return "Oblong";
+            } else if (normJawWidth > normCheekboneWidth * 1.1 && faceHeight > normCheekboneWidth * 1.3) {
+                return "Pear";
+            } else {
+                return "Unknown";
+            }
+        }
+
+        function determineFaceShapeWithSmoothing(landmarks) {
+            let faceShape = determineFaceShape(landmarks);
+            faceShapeHistory.push(faceShape);
+            if (faceShapeHistory.length > historyLength) {
+                faceShapeHistory.shift();
+            }
+            // Get the most frequent face shape in the history
+            let counts = {};
+            faceShapeHistory.forEach(shape => {
+                counts[shape] = (counts[shape] || 0) + 1;
+            });
+            let mostFrequentShape = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            return mostFrequentShape;
         }
 
         function changeBackgroundColor(faceShape) {
