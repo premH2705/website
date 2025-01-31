@@ -3,173 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Shape Recognition</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <title>Live Face AI Detection</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: black; /* Default background color */
             margin: 0;
             padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: black;
-            color: #eaeaea;
+            transition: background-color 0.5s ease; /* Smooth transition for background color */
+        }
+        .header {
+            background: linear-gradient(to right, black, darkblue);
+            color: yellow;
+            padding: 10px;
+            font-size: 18px;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            position: relative;
-            transition: background 0.5s ease-in-out;
         }
-        h1 {
-            font-size: 2em;
+        .title {
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 20px;
+            text-decoration: underline;
+            color: black;
+            text-shadow: 2px 2px 0px orange;
         }
-        .video-container {
-            position: relative;
-            width: 50%;
-            max-width: 600px;
-            aspect-ratio: 4 / 3;
-            border-radius: 8px;
+        .webcam-box {
+            width: 300px;
+            height: 200px;
+            border: 3px solid black;
+            display: inline-block;
+            margin-top: 20px;
             overflow: hidden;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
-            margin-bottom: 30px;
         }
-        video, canvas {
-            position: absolute;
+        video {
             width: 100%;
             height: 100%;
         }
-        .result {
-            font-size: 1.4em;
-            font-weight: bold;
-            text-align: center;
+        .face-type {
+            margin-top: 20px;
+            font-size: 18px;
         }
-        .subheading {
-            position: absolute;
-            bottom: 10px;
-            right: 20px;
-            font-size: 1em;
-            font-weight: bold;
-            color: #eaeaea;
+        .face-type input {
+            font-size: 16px;
+            padding: 5px;
+            border: 2px solid black;
+            width: 200px;
         }
-        .beta-disclaimer {
-            position: absolute;
-            bottom: 10px;
-            left: 20px;
+        .disclaimer {
             font-size: 0.8em;
-            color: #eaeaea;
+            color: black;
             opacity: 0.7;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Face Shape Recognition</h1>
-    <div class="video-container">
-        <video id="webcam" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
+
+    <div class="header">
+        <span>t&c apply</span>
+        <span>face.io</span>
+        <span>Website by Prem Patel</span>
     </div>
-    <div class="result" id="faceShapeResult">Detecting...</div>
-    <div class="subheading">Website by Prem Patel</div>
-    <div class="beta-disclaimer">This is a beta version, so it may detect the wrong face shape type. Thank you for your understanding.</div>
+
+    <h1 class="title">Live face A.I face shape detection</h1>
+
+    <div class="webcam-box">
+        <video id="webcam" autoplay></video>
+    </div>
+
+    <div class="face-type">
+        <label for="faceType">Face type :</label>
+        <input type="text" id="faceType" readonly>
+    </div>
 
     <script>
-        let video = document.getElementById('webcam');
-        let canvas = document.getElementById('canvas');
-        let ctx = canvas.getContext('2d');
-        let resultText = document.getElementById('faceShapeResult');
-        let faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
-        faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.95, minTrackingConfidence: 0.95 });
-        faceMesh.onResults(processResults);
-
-        // Smoothing logic
-        let faceShapeHistory = [];
-        const historyLength = 5;
-
+        // Start webcam stream
         async function startWebcam() {
-            let stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            await new Promise(resolve => video.onloadedmetadata = resolve);
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            detectFace();
-        }
-
-        async function detectFace() {
-            await faceMesh.send({ image: video });
-            requestAnimationFrame(detectFace);
-        }
-
-        function processResults(results) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-                resultText.innerText = "No Face Detected";
-                document.body.style.background = "black";
-                return;
-            }
-            let landmarks = results.multiFaceLandmarks[0];
-            let faceShape = determineFaceShapeWithSmoothing(landmarks); // Use smoothed face shape
-            resultText.innerText = `Face Shape: ${faceShape}`;
-            changeBackgroundColor(faceShape);
-        }
-
-        function determineFaceShape(landmarks) {
-            // Key landmarks for face shape determination
-            let foreheadWidth = Math.abs(landmarks[71].x - landmarks[301].x); // Forehead width
-            let cheekboneWidth = Math.abs(landmarks[234].x - landmarks[454].x); // Cheekbone width
-            let jawWidth = Math.abs(landmarks[172].x - landmarks[397].x); // Jaw width
-            let faceHeight = Math.abs(landmarks[10].y - landmarks[152].y); // Face height
-
-            // Normalize the values
-            let normCheekboneWidth = cheekboneWidth / faceHeight;
-            let normForeheadWidth = foreheadWidth / faceHeight;
-            let normJawWidth = jawWidth / faceHeight;
-
-            // Determine face shape based on normalized ratios
-            if (normCheekboneWidth > normForeheadWidth * 1.15 && normCheekboneWidth > normJawWidth * 1.15) {
-                return "Diamond";
-            } else if (normForeheadWidth > normCheekboneWidth * 1.1 && normJawWidth < normForeheadWidth * 0.85) {
-                return "Heart";
-            } else if (faceHeight > normCheekboneWidth * 1.5) {
-                return "Oval";
-            } else if (normJawWidth > normForeheadWidth * 1.1 && normJawWidth > normCheekboneWidth * 1.1) {
-                return "Square";
-            } else if (normCheekboneWidth > normForeheadWidth * 1.05 && faceHeight < normCheekboneWidth * 1.3) {
-                return "Round";
-            } else if (faceHeight > normForeheadWidth * 1.7) {
-                return "Oblong";
-            } else if (normJawWidth > normCheekboneWidth * 1.1 && faceHeight > normCheekboneWidth * 1.3) {
-                return "Pear";
-            } else {
-                return "Unknown";
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('webcam').srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing webcam:", error);
             }
         }
-
-        function determineFaceShapeWithSmoothing(landmarks) {
-            let faceShape = determineFaceShape(landmarks);
-            faceShapeHistory.push(faceShape);
-            if (faceShapeHistory.length > historyLength) {
-                faceShapeHistory.shift();
-            }
-            // Get the most frequent face shape in the history
-            let counts = {};
-            faceShapeHistory.forEach(shape => {
-                counts[shape] = (counts[shape] || 0) + 1;
-            });
-            let mostFrequentShape = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-            return mostFrequentShape;
-        }
-
-        function changeBackgroundColor(faceShape) {
-            const colors = { "Diamond": "blue", "Heart": "red", "Oval": "green", "Square": "yellow", "Round": "purple", "Oblong": "orange", "Pear": "pink" };
-            document.body.style.background = colors[faceShape] || "black";
-        }
-
         startWebcam();
+
+        // Function to change background color based on face shape
+        function changeBackgroundColor(faceShape) {
+            const body = document.body;
+            switch (faceShape) {
+                case "Diamond":
+                    body.style.backgroundColor = "blue";
+                    break;
+                case "Heart":
+                    body.style.backgroundColor = "red";
+                    break;
+                case "Oval":
+                    body.style.backgroundColor = "green";
+                    break;
+                case "Round":
+                    body.style.backgroundColor = "yellow";
+                    break;
+                case "Square":
+                    body.style.backgroundColor = "purple";
+                    break;
+                case "Oblong":
+                    body.style.backgroundColor = "orange";
+                    break;
+                default:
+                    body.style.backgroundColor = "black"; // No face detected
+                    break;
+            }
+        }
+
+        // Simulate face shape detection (replace this with actual detection logic)
+        function detectFaceShape() {
+            // Simulate detecting only one face shape at a time
+            const faceShapes = ["Diamond", "Heart", "Oval", "Round", "Square", "Oblong"];
+            const detectedFaceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)];
+
+            // Update the face type input field
+            document.getElementById('faceType').value = detectedFaceShape;
+
+            // Change background color based on detected face shape
+            changeBackgroundColor(detectedFaceShape);
+        }
+
+        // Run face detection every 5 seconds
+        setInterval(detectFaceShape, 5000);
     </script>
+
 </body>
 </html>
