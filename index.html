@@ -3,83 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Face AI Detection</title>
+    <title>AI Face Shape Detection</title>
     <style>
+        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             text-align: center;
-            background-color: black; /* Default background color */
+            background-color: #1a1a1a;
             margin: 0;
             padding: 0;
-            transition: background-color 0.5s ease; /* Smooth transition for background color */
+            transition: background-color 0.5s ease;
+            color: white;
         }
+
+        /* Header Styles */
         .header {
-            background: linear-gradient(to right, black, darkblue);
-            color: yellow;
-            padding: 10px;
-            font-size: 18px;
+            background: linear-gradient(to right, #1a1a1a, #333333);
+            color: white;
+            padding: 20px;
+            font-size: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        .title {
-            font-size: 28px;
+
+        .header span {
             font-weight: bold;
-            text-decoration: underline;
-            color: black;
-            text-shadow: 2px 2px 0px orange;
         }
+
+        /* Main Content Styles */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-top: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #ffa500;
+            margin-top: 10px;
+        }
+
+        /* Webcam Box Styles */
         .webcam-box {
-            width: 300px;
-            height: 200px;
-            border: 3px solid black;
-            display: inline-block;
-            margin-top: 20px;
+            width: 90%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 4/3;
+            border: 5px solid #444444;
+            border-radius: 15px;
+            margin: 30px auto;
             overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
+
         video {
             width: 100%;
             height: 100%;
+            border-radius: 10px;
         }
+
+        /* Face Shape Detection Result Styles */
         .face-type {
-            margin-top: 20px;
-            font-size: 18px;
+            margin-top: 25px;
+            font-size: 20px;
         }
+
         .face-type input {
-            font-size: 16px;
-            padding: 5px;
-            border: 2px solid black;
-            width: 200px;
+            font-size: 18px;
+            padding: 10px;
+            border: 2px solid #555555;
+            width: 220px;
+            border-radius: 5px;
+            background-color: #333333;
+            color: white;
+            text-align: center;
         }
-        .disclaimer {
-            font-size: 0.8em;
+
+        /* Disclaimer Button Styles */
+        .disclaimer-button {
+            margin-top: 25px;
+            padding: 12px 24px;
+            font-size: 18px;
+            background-color: #ffa500;
             color: black;
-            opacity: 0.7;
-            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .disclaimer-button:hover {
+            background-color: #e69500;
+        }
+
+        /* Terms and Conditions Styles */
+        .terms {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #aaaaaa;
+            padding: 15px;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .terms ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .terms ul li {
+            margin: 10px 0;
+        }
+
+        /* Footer Styles */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to right, #1a1a1a, #333333);
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+            }
+
+            .webcam-box {
+                width: 100%;
+            }
         }
     </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
+    <script>
+        alert("Beta version: Results may not be 100% accurate and may detect the wrong face shape.");
+    </script>
+
     <div class="header">
-        <span>t&c apply</span>
-        <span>face.io</span>
-        <span>Website by Prem Patel</span>
+        <span>AI Face Shape Detection</span>
+        <span>By Prem Patel</span>
     </div>
 
-    <h1 class="title">Live face A.I face shape detection</h1>
+    <div class="container">
+        <h1 class="title">Live AI Face Shape Detection</h1>
+        <p class="subtitle">Come closer to the camera for accurate results</p>
 
-    <div class="webcam-box">
-        <video id="webcam" autoplay></video>
+        <div class="webcam-box">
+            <video id="webcam" autoplay></video>
+        </div>
+
+        <div class="face-type">
+            <label for="faceType">Detected Face Shape:</label>
+            <input type="text" id="faceType" readonly>
+        </div>
+
+        <button class="disclaimer-button" onclick="showDisclaimer()">Beta Version Disclaimer</button>
+
+        <div class="terms">
+            <p>Terms and Conditions:</p>
+            <ul>
+                <li>This is a beta version of the AI Face Shape Detection tool.</li>
+                <li>Results may not be 100% accurate and are for informational purposes only.</li>
+                <li>Please ensure proper lighting and come closer to the camera for better results.</li>
+                <li>By using this tool, you agree to our terms and conditions.</li>
+            </ul>
+        </div>
     </div>
 
-    <div class="face-type">
-        <label for="faceType">Face type :</label>
-        <input type="text" id="faceType" readonly>
+    <div class="footer">
+        <p>© 2023 AI Face Shape Detection. All rights reserved.</p>
     </div>
 
     <script>
-        // Start webcam stream
+        function showDisclaimer() {
+            alert("This is a beta version of the AI Face Shape Detection tool. Results may not be 100% accurate.");
+        }
+
         async function startWebcam() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -90,49 +210,19 @@
         }
         startWebcam();
 
-        // Function to change background color based on face shape
-        function changeBackgroundColor(faceShape) {
-            const body = document.body;
-            switch (faceShape) {
-                case "Diamond":
-                    body.style.backgroundColor = "blue";
-                    break;
-                case "Heart":
-                    body.style.backgroundColor = "red";
-                    break;
-                case "Oval":
-                    body.style.backgroundColor = "green";
-                    break;
-                case "Round":
-                    body.style.backgroundColor = "yellow";
-                    break;
-                case "Square":
-                    body.style.backgroundColor = "purple";
-                    break;
-                case "Oblong":
-                    body.style.backgroundColor = "orange";
-                    break;
-                default:
-                    body.style.backgroundColor = "black"; // No face detected
-                    break;
-            }
-        }
-
-        // Simulate face shape detection (replace this with actual detection logic)
         function detectFaceShape() {
-            // Simulate detecting only one face shape at a time
             const faceShapes = ["Diamond", "Heart", "Oval", "Round", "Square", "Oblong"];
             const detectedFaceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)];
-
-            // Update the face type input field
             document.getElementById('faceType').value = detectedFaceShape;
-
-            // Change background color based on detected face shape
             changeBackgroundColor(detectedFaceShape);
         }
 
-        // Run face detection every 5 seconds
-        setInterval(detectFaceShape, 5000);
+        function changeBackgroundColor(faceShape) {
+            const colors = { "Diamond": "blue", "Heart": "red", "Oval": "green", "Round": "yellow", "Square": "purple", "Oblong": "orange" };
+            document.body.style.backgroundColor = colors[faceShape] || "black";
+        }
+
+        setTimeout(detectFaceShape, 3000);
     </script>
 
 </body>
