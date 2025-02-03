@@ -202,37 +202,106 @@
 
         async function startWebcam() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                document.getElementById('webcam').srcObject = stream;
-                detectFaceShapeLive(); // Start live face shape detection
+                let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+                return new Promise(resolve => {
+                    video.onloadedmetadata = () => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        resolve();
+                    };
+                });
             } catch (error) {
                 console.error("Error accessing webcam:", error);
             }
         }
 
-        function detectFaceShapeLive() {
-            const faceShapes = ["Diamond", "Heart", "Oval", "Round", "Square", "Oblong"];
-            let lastDetectedShape = "";
-
-            setInterval(() => {
-                // Simulate face detection logic
-                const detectedFaceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)];
-
-                // Ensure only one face shape is detected at a time
-                if (detectedFaceShape !== lastDetectedShape) {
-                    document.getElementById('faceType').value = detectedFaceShape;
-                    changeBackgroundColor(detectedFaceShape);
-                    lastDetectedShape = detectedFaceShape;
-                }
-            }, 3000); // Simulate live detection every 3 seconds
+        async function loadFaceMesh() {
+            faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
+            faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.9, minTrackingConfidence: 0.9 });
+            faceMesh.onResults(processResults);
         }
 
-        function changeBackgroundColor(faceShape) {
-            const colors = { "Diamond": "blue", "Heart": "red", "Oval": "green", "Round": "yellow", "Square": "purple", "Oblong": "orange" };
-            document.body.style.backgroundColor = colors[faceShape] || "black";
+        async function detectFace() {
+            if (!faceMesh) return;
+            await faceMesh.send({ image: video });
+            requestAnimationFrame(detectFace);
         }
 
-        startWebcam(); // Start the webcam and face detection
+        function processResults(results) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+                noHumanMessage.style.display = 'block';
+                resultText.style.display = 'none';
+                return;
+            } else {
+                noHumanMessage.style.display = 'none';
+                resultText.style.display = 'block';
+            }
+
+            let faceShape = classifyFaceShape(results.multiFaceLandmarks[0]);
+            resultText.innerText = `Face Shape: ${faceShape}`;
+            applyColor(faceShape);
+            drawLandmarks(results.multiFaceLandmarks[0]);
+        }
+
+        function classifyFaceShape(landmarks) {
+            let foreheadWidth = Math.abs(landmarks[10].x - landmarks[338].x);
+            let cheekboneWidth = Math.abs(landmarks[234].x - landmarks[454].x);
+            let jawWidth = Math.abs(landmarks[152].x - landmarks[175].x);
+            let faceHeight = Math.abs(landmarks[10].y - landmarks[152].y);
+            let aspectRatio = cheekboneWidth / faceHeight;
+
+            if (aspectRatio > 1.4) return "Oval";
+            if (jawWidth > cheekboneWidth * 1.15) return "Square";
+            if (cheekboneWidth > foreheadWidth * 1.3) return "Heart";
+            if (aspectRatio < 0.95) return "Round";
+            if (faceHeight > foreheadWidth * 1.5) return "Oblong";
+            if (jawWidth > cheekboneWidth && cheekboneWidth > foreheadWidth) return "Diamond";
+            if (jawWidth > foreheadWidth * 1.2) return "Pear";
+            return "Unknown";
+        }
+
+        function applyColor(shape) {
+            const colors = {
+                "Oval": "lightblue",
+                "Round": "pink",
+                "Square": "orange",
+                "Diamond": "purple",
+                "Heart": "red",
+                "Pear": "brown",
+                "Oblong": "yellow",
+                "Unknown": "gray"
+            };
+            resultText.style.backgroundColor = colors[shape] || "gray";
+        }
+
+        function drawLandmarks(landmarks) {
+            ctx.strokeStyle = "cyan";
+            ctx.lineWidth = 2;
+            for (let i = 0; i < landmarks.length; i++) {
+                let x = landmarks[i].x * canvas.width;
+                let y = landmarks[i].y * canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                ctx.fillStyle = "red";
+                ctx.fill();
+            }
+        }
+
+        async function run() {
+            await startWebcam();
+            await loadFaceMesh();
+            detectFace();
+        }
+
+        run();
+
+        function toggleInfo() {
+            infoSection.style.display = infoSection.style.display === "none" ? "block" : "none";
+        }
     </script>
 
 </body>
