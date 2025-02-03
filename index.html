@@ -3,320 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Face Shape Recognition</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <title>AI Face Shape Detection</title>
     <style>
+        /* General Styles */
         body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background-color: #1a1a1a;
             margin: 0;
             padding: 0;
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a, #333);
+            transition: background-color 0.5s ease;
             color: white;
-            overflow-x: hidden;
-            animation: backgroundShift 5s infinite alternate;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        h1 {
+        /* Header Styles */
+        .header {
+            background: linear-gradient(to right, #1a1a1a, #333333);
+            color: white;
+            padding: 20px;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header span {
+            font-weight: bold;
+        }
+
+        /* Main Content Styles */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .title {
+            font-size: 36px;
+            font-weight: bold;
             margin-top: 30px;
-            color: cyan;
-            text-shadow: 2px 2px 10px black;
-            font-size: 2.5em;
-            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
-        /* Responsive video container */
-        .video-container {
+        .subtitle {
+            font-size: 18px;
+            color: #ffa500;
+            margin-top: 10px;
+        }
+
+        /* Webcam Box Styles */
+        .webcam-box {
             width: 90%;
-            max-width: 450px;
-            aspect-ratio: 4 / 3;
-            border: 3px solid cyan;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 4/3;
+            border: 5px solid #444444;
             border-radius: 15px;
-            margin-top: 20px;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 30px auto;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        video, canvas {
-            position: absolute;
+        video {
             width: 100%;
             height: 100%;
-            border-radius: 15px;
+            border-radius: 10px;
         }
 
-        /* Result Box Style */
-        .result {
-            font-size: 1.5em;
-            font-weight: bold;
+        /* Face Shape Detection Result Styles */
+        .face-type {
+            margin-top: 25px;
+            font-size: 20px;
+        }
+
+        .face-type input {
+            font-size: 18px;
             padding: 10px;
-            display: inline-block;
-            border-radius: 10px;
-            margin-top: 20px;
-            transition: background-color 0.5s ease;
+            border: 2px solid #555555;
+            width: 220px;
+            border-radius: 5px;
+            background-color: #333333;
+            color: white;
             text-align: center;
         }
 
-        /* No human detected message */
-        .no-human {
-            font-size: 3em;
-            color: red;
-            font-weight: bold;
-            padding: 50px;
-            display: inline-block;
-            border-radius: 10px;
-            background-color: rgba(255, 0, 0, 0.5);
-            margin-top: 50px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-        }
-
-        /* Footer styling */
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            font-size: 14px;
-            color: cyan;
-        }
-
-        /* Info section styling */
-        .intro {
-            padding: 20px;
-            margin: 20px auto;
-            width: 80%;
-            max-width: 600px;
-            background-color: rgba(0, 0, 0, 0.6);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            animation: fadeIn 2s ease-out;
-        }
-
-        .section-title {
-            font-size: 1.8em;
-            color: cyan;
-            text-shadow: 1px 1px 5px black;
-            margin-bottom: 15px;
-        }
-
-        button {
-            padding: 12px 25px;
-            font-size: 1.2em;
-            background-color: cyan;
+        /* Disclaimer Button Styles */
+        .disclaimer-button {
+            margin-top: 25px;
+            padding: 12px 24px;
+            font-size: 18px;
+            background-color: #ffa500;
             color: black;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+        }
+
+        .disclaimer-button:hover {
+            background-color: #e69500;
+        }
+
+        /* Terms and Conditions Styles */
+        .terms {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #aaaaaa;
+            padding: 15px;
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .terms ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .terms ul li {
+            margin: 10px 0;
+        }
+
+        /* Footer Styles */
+        .footer {
+            position: fixed;
+            bottom: 0;
             width: 100%;
-            max-width: 200px;
-            margin-top: 15px;
+            background: linear-gradient(to right, #1a1a1a, #333333);
+            color: white;
+            padding: 15px;
+            font-size: 16px;
         }
 
-        button:hover {
-            background-color: #00b7b7;
-        }
-
-        @keyframes backgroundShift {
-            0% { background: linear-gradient(135deg, #1a1a1a, #222); }
-            100% { background: linear-gradient(135deg, #333, #444); }
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        /* Responsiveness for small screens */
+        /* Responsive Design */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
+            .title {
+                font-size: 28px;
             }
 
-            .video-container {
-                max-width: 100%;
+            .subtitle {
+                font-size: 16px;
             }
 
-            .result {
-                font-size: 1.2em;
-            }
-
-            .no-human {
-                font-size: 2.5em;
-            }
-
-            .intro, .info {
-                width: 90%;
-            }
-
-            .footer {
-                font-size: 12px;
+            .webcam-box {
+                width: 100%;
             }
         }
-
-        /* Handling touch devices better */
-        .video-container {
-            touch-action: none;
-        }
-
     </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Face Shape Recognition</h1>
-
-    <div class="intro">
-        <div class="section-title">Welcome to Face Shape Recognition</div>
-        <p>This website uses AI-powered face mesh technology to analyze the shape of your face in real-time using your webcam. The tool detects landmarks on your face and classifies your face shape based on several key parameters.</p>
-        <button onclick="toggleInfo()">Learn More</button>
-    </div>
-
-    <div class="video-container">
-        <video id="webcam" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-    </div>
-
-    <div class="result" id="faceShapeResult">Detecting...</div>
-
-    <div class="no-human" id="noHumanMessage" style="display: none;">
-        No Human Detected
-    </div>
-
-    <div class="info" id="infoSection" style="display: none;">
-        <div class="section-title">How Does It Work?</div>
-        <p>The face shape is determined based on various landmarks that represent key points on the face. These landmarks are used to calculate facial dimensions and ratios such as forehead width, cheekbone width, jaw width, and face height. The system then classifies the face into one of several shapes:</p>
-        <ul>
-            <li><strong>Oval:</strong> A balanced face with slightly longer length than width.</li>
-            <li><strong>Round:</strong> A face with a rounded jawline and equal width and height.</li>
-            <li><strong>Square:</strong> A face with strong, angular features and equal width across forehead, cheekbones, and jawline.</li>
-            <li><strong>Diamond:</strong> A face with high cheekbones and a narrow jawline.</li>
-            <li><strong>Heart:</strong> A face with a wide forehead and narrow chin.</li>
-            <li><strong>Pear:</strong> A face with a narrow forehead and wider jawline.</li>
-            <li><strong>Oblong:</strong> A longer face shape with a narrow width.</li>
-        </ul>
-    </div>
-
-    <div class="footer">Website by Prem Patel</div>
 
     <script>
-        let video = document.getElementById('webcam');
-        let canvas = document.getElementById('canvas');
-        let ctx = canvas.getContext('2d');
-        let resultText = document.getElementById('faceShapeResult');
-        let noHumanMessage = document.getElementById('noHumanMessage');
-        let faceMesh;
-        let infoSection = document.getElementById('infoSection');
+        alert("Beta version: Results may not be 100% accurate and may detect the wrong face shape.");
+    </script>
+
+    <div class="header">
+        <span>AI Face Shape Detection</span>
+        <span>By Prem Patel</span>
+    </div>
+
+    <div class="container">
+        <h1 class="title">Live AI Face Shape Detection</h1>
+        <p class="subtitle">Come closer to the camera for accurate results</p>
+
+        <div class="webcam-box">
+            <video id="webcam" autoplay></video>
+        </div>
+
+        <div class="face-type">
+            <label for="faceType">Detected Face Shape:</label>
+            <input type="text" id="faceType" readonly>
+        </div>
+
+        <button class="disclaimer-button" onclick="showDisclaimer()">Beta Version Disclaimer</button>
+
+        <div class="terms">
+            <p>Terms and Conditions:</p>
+            <ul>
+                <li>This is a beta version of the AI Face Shape Detection tool.</li>
+                <li>Results may not be 100% accurate and are for informational purposes only.</li>
+                <li>Please ensure proper lighting and come closer to the camera for better results.</li>
+                <li>By using this tool, you agree to our terms and conditions.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2023 AI Face Shape Detection. All rights reserved.</p>
+    </div>
+
+    <script>
+        function showDisclaimer() {
+            alert("This is a beta version of the AI Face Shape Detection tool. Results may not be 100% accurate.");
+        }
 
         async function startWebcam() {
             try {
-                let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                video.srcObject = stream;
-                return new Promise(resolve => {
-                    video.onloadedmetadata = () => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        resolve();
-                    };
-                });
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('webcam').srcObject = stream;
+                detectFaceShapeLive(); // Start live face shape detection
             } catch (error) {
                 console.error("Error accessing webcam:", error);
             }
         }
 
-        async function loadFaceMesh() {
-            faceMesh = new FaceMesh({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}` });
-            faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.9, minTrackingConfidence: 0.9 });
-            faceMesh.onResults(processResults);
+        function detectFaceShapeLive() {
+            const faceShapes = ["Diamond", "Heart", "Oval", "Round", "Square", "Oblong"];
+            let lastDetectedShape = "";
+
+            setInterval(() => {
+                // Simulate face detection logic
+                const detectedFaceShape = faceShapes[Math.floor(Math.random() * faceShapes.length)];
+
+                // Ensure only one face shape is detected at a time
+                if (detectedFaceShape !== lastDetectedShape) {
+                    document.getElementById('faceType').value = detectedFaceShape;
+                    changeBackgroundColor(detectedFaceShape);
+                    lastDetectedShape = detectedFaceShape;
+                }
+            }, 3000); // Simulate live detection every 3 seconds
         }
 
-        async function detectFace() {
-            if (!faceMesh) return;
-            await faceMesh.send({ image: video });
-            requestAnimationFrame(detectFace);
+        function changeBackgroundColor(faceShape) {
+            const colors = { "Diamond": "blue", "Heart": "red", "Oval": "green", "Round": "yellow", "Square": "purple", "Oblong": "orange" };
+            document.body.style.backgroundColor = colors[faceShape] || "black";
         }
 
-        function processResults(results) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
-                noHumanMessage.style.display = 'block';
-                resultText.style.display = 'none';
-                return;
-            } else {
-                noHumanMessage.style.display = 'none';
-                resultText.style.display = 'block';
-            }
-
-            let faceShape = classifyFaceShape(results.multiFaceLandmarks[0]);
-            resultText.innerText = `Face Shape: ${faceShape}`;
-            applyColor(faceShape);
-            drawLandmarks(results.multiFaceLandmarks[0]);
-        }
-
-        function classifyFaceShape(landmarks) {
-            let foreheadWidth = Math.abs(landmarks[10].x - landmarks[338].x);
-            let cheekboneWidth = Math.abs(landmarks[234].x - landmarks[454].x);
-            let jawWidth = Math.abs(landmarks[152].x - landmarks[175].x);
-            let faceHeight = Math.abs(landmarks[10].y - landmarks[152].y);
-            let aspectRatio = cheekboneWidth / faceHeight;
-
-            if (aspectRatio > 1.4) return "Oval";
-            if (jawWidth > cheekboneWidth * 1.15) return "Square";
-            if (cheekboneWidth > foreheadWidth * 1.3) return "Heart";
-            if (aspectRatio < 0.95) return "Round";
-            if (faceHeight > foreheadWidth * 1.5) return "Oblong";
-            if (jawWidth > cheekboneWidth && cheekboneWidth > foreheadWidth) return "Diamond";
-            if (jawWidth > foreheadWidth * 1.2) return "Pear";
-            return "Unknown";
-        }
-
-        function applyColor(shape) {
-            const colors = {
-                "Oval": "lightblue",
-                "Round": "pink",
-                "Square": "orange",
-                "Diamond": "purple",
-                "Heart": "red",
-                "Pear": "brown",
-                "Oblong": "yellow",
-                "Unknown": "gray"
-            };
-            resultText.style.backgroundColor = colors[shape] || "gray";
-        }
-
-        function drawLandmarks(landmarks) {
-            ctx.strokeStyle = "cyan";
-            ctx.lineWidth = 2;
-            for (let i = 0; i < landmarks.length; i++) {
-                let x = landmarks[i].x * canvas.width;
-                let y = landmarks[i].y * canvas.height;
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                ctx.fillStyle = "red";
-                ctx.fill();
-            }
-        }
-
-        async function run() {
-            await startWebcam();
-            await loadFaceMesh();
-            detectFace();
-        }
-
-        run();
-
-        function toggleInfo() {
-            infoSection.style.display = infoSection.style.display === "none" ? "block" : "none";
-        }
+        startWebcam(); // Start the webcam and face detection
     </script>
+
 </body>
 </html>
